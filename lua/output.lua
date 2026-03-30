@@ -97,71 +97,83 @@
 local M = {}
 
 M.__Header = function(dayName, monthName, day, year)
-  local mid = dayName .. " " .. monthName .. " " .. day .. " " .. year
-  local spaces = (62 - string.len(mid))
-  local paddingL = (" "):rep(spaces / 2 + spaces % 2)
-  local paddingR = (" "):rep(spaces / 2)
-  return "│" .. paddingL .. mid .. paddingR .. "│\n"
+	local mid = dayName .. " " .. monthName .. " " .. day .. " " .. year
+	local spaces = (62 - string.len(mid))
+	local paddingL = (" "):rep(spaces / 2 + spaces % 2)
+	local paddingR = (" "):rep(spaces / 2)
+	return "│" .. paddingL .. mid .. paddingR .. "│\n"
 end
 
-M.createOutput = function()
-  local date = require("date").getDate()
+---cfg
+---@param cfg table: table fields: border, only 'rounded' and 'single' now
+---@return nil
+M.createOutput = function(cfg)
+	local border = { "╭", "╮", "╰", "╯" }
+	if cfg and cfg.border == "single" or vim.opt.winborder == "single" then
+		border = { "┌", "┐", "└", "┘" }
+	end
 
-  local start = date.prevMonthLastDay - date.currentMonthfirstDayWday + 2
-  local pos = { ["line"] = 1, ["col"] = 1 }
+	local date = require("date").getDate()
 
-  local days = ""
+	local start = date.prevMonthLastDay - date.currentMonthfirstDayWday + 2
+	local pos = { ["line"] = 1, ["col"] = 1 }
 
-  for i = start, date.prevMonthLastDay, 1 do
-    days = days .. "│   " .. i .. "   "
-    pos.col = pos.col + 1
-  end
+	local days = ""
 
-  for i = 1, date.currentMonthLastDay, 1 do
-    local paddingL
-    local paddingR
-    local day = ""
-    if i == date.day then
-      day = "   (" .. i .. ")"
-      paddingL = (" "):rep((8 - string.len(day)) / 2 + (8 - string.len(day)) % 2)
-      paddingR = (" "):rep((8 - string.len(day)) / 2 + 1)
-    else
-      day = "" .. i
-      paddingL = (" "):rep((8 - string.len(day)) / 2 + (8 - string.len(day)) % 2)
-      paddingR = (" "):rep((8 - string.len(day)) / 2)
-    end
+	for i = start, date.prevMonthLastDay, 1 do
+		days = days .. "│   " .. i .. "   "
+		pos.col = pos.col + 1
+	end
 
-    days = days .. "│" .. paddingL .. day .. paddingR
-    if pos.col == 7 then
-      days = days
-          .. "│\n"
-          .. "├────────┼────────┼────────┼────────┼────────┼────────┼────────┤\n"
-      pos.col = 1
-      pos.line = pos.line + 1
-    else
-      pos.col = pos.col + 1
-    end
-  end
+	for i = 1, date.currentMonthLastDay, 1 do
+		local paddingL
+		local paddingR
+		local day = ""
+		if i == date.day then
+			day = "   (" .. i .. ")"
+			paddingL = (" "):rep((8 - string.len(day)) / 2 + (8 - string.len(day)) % 2)
+			paddingR = (" "):rep((8 - string.len(day)) / 2 + 1)
+		else
+			day = "" .. i
+			paddingL = (" "):rep((8 - string.len(day)) / 2 + (8 - string.len(day)) % 2)
+			paddingR = (" "):rep((8 - string.len(day)) / 2)
+		end
 
-  local nextday = 1
-  for i = pos.col, 7, 1 do
-    days = days .. "│   " .. "0" .. nextday .. "   "
-    nextday = nextday + 1
-  end
-  days = days .. "│\n"
-  days = days
-      .. "└────────┴────────┴────────┴────────┴────────┴────────┴────────┘"
+		days = days .. "│" .. paddingL .. day .. paddingR
+		if pos.col == 7 then
+			days = days
+				.. "│\n"
+				.. "├────────┼────────┼────────┼────────┼────────┼────────┼────────┤\n"
+			pos.col = 1
+			pos.line = pos.line + 1
+		else
+			pos.col = pos.col + 1
+		end
+	end
+	local nextday = 1
+	for i = pos.col, 7, 1 do
+		days = days .. "│   " .. "0" .. nextday .. "   "
+		nextday = nextday + 1
+	end
+	days = days .. "│\n"
+	days = days
+		.. border[3]
+		.. "────────┴────────┴────────┴────────┴────────┴────────┴────────"
+		.. border[4]
 
-  local output = (
-    "┌──────────────────────────────────────────────────────────────┐\n"
-    .. M.__Header(date.dayName, date.monthName, date.day, date.year)
-    .. "├────────┬────────┬────────┬────────┬────────┬────────┬────────┤\n"
-    .. "│ 󰖨  Sun │   Mon │   Tue │   Wed │   Thu │   Fri │   Sat │\n"
-    .. "├────────┼────────┼────────┼────────┼────────┼────────┼────────┤\n"
-    .. days
-  )
+	local output = (
+		border[1]
+		.. "──────────────────────────────────────────────────────────────"
+		.. border[2]
+		.. "\n"
+		.. M.__Header(date.dayName, date.monthName, date.day, date.year)
+		.. "├────────┬────────┬────────┬────────┬────────┬────────┬────────┤\n"
+		.. "│ 󰖨  Sun │   Mon │   Tue │   Wed │   Thu │   Fri │   Sat │\n"
+		.. "├────────┼────────┼────────┼────────┼────────┼────────┼────────┤\n"
+		.. days
+	)
 
-  return output
+	return output
 end
 
 return M
