@@ -109,11 +109,11 @@ end
 ---@return nil
 M.createOutput = function(cfg)
   local border = { "╭", "╮", "╰", "╯" }
-  if cfg and cfg.border == "single" or vim.opt.winborder == "single" then
+  if cfg and cfg.border == "single" or (vim and vim.opt.winborder == "single") then
     border = { "┌", "┐", "└", "┘" }
   end
 
-  local date = require("date").getDate()
+  local date = require("date").getDate(cfg and cfg._time or nil) -- _time for debug
 
   local start = date.prevMonthLastDay - date.currentMonthfirstDayWday + 2
   local pos = { ["line"] = 1, ["col"] = 1 }
@@ -130,8 +130,8 @@ M.createOutput = function(cfg)
     local paddingR
     local day = ""
     if i == date.day then
-      day = "   (" .. i .. ")"
-      paddingL = (" "):rep((8 - string.len(day)) / 2 + (8 - string.len(day)) % 2)
+      day = " (" .. i .. ")"
+      paddingL = (" "):rep((8 - string.len(day)) / 2 + (8 - string.len(day)) % 2 + 1)
       paddingR = (" "):rep((8 - string.len(day)) / 2 + 1)
     else
       day = "" .. i

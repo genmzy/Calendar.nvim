@@ -90,9 +90,9 @@ M.__getDayName = function(wday)
   return M.__dayName[wday]
 end
 
-M.getDate = function()
+M.getDate = function(time)
   -- return easy-to use date data
-  local date = M.__getDate()
+  local date = M.__getDate(time)
 
   local D = {
     ["prevMonthLastDay"] = M.__getLastDay(date.year, date.month - 1),
